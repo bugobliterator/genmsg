@@ -337,6 +337,7 @@ DURATION_MSG = "int32 secs\nint32 nsecs"
 PRIMITIVE_TYPES = ['int8','uint8','int16','uint16','int32','uint32','int64','uint64','float32','float64',
                    'string',
                    'bool',
+                   'float16',
                    # deprecated:
                    'char','byte']
 BUILTIN_TYPES = PRIMITIVE_TYPES + [TIME, DURATION]
@@ -346,4 +347,6 @@ def is_builtin(msg_type_name):
     :param msg_type_name: name of message type, ``str``
     :returns: True if msg_type_name is a builtin/primitive type, ``bool``
     """
+    if msg_type_name.find('int') >= 0:
+        return True
     return msg_type_name in BUILTIN_TYPES

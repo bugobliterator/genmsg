@@ -251,7 +251,7 @@ def load_msg_from_string(msg_context, text, full_name):
     :returns: :class:`MsgSpec` specification
     :raises: :exc:`InvalidMsgSpec` If syntax errors or other problems are detected in file
     """
-    log("load_msg_from_string", full_name)
+    print("load_msg_from_string", full_name)
     package_name, short_name = package_resource_name(full_name)
     types = []
     names = []
@@ -263,6 +263,28 @@ def load_msg_from_string(msg_context, text, full_name):
         if CONSTCHAR in clean_line:
             constants.append(_load_constant_line(orig_line))
         else:
+            if orig_line.find('void') >= 0:
+                continue
+            elif orig_line.find('int') >= 0:
+                if orig_line.find('uint') == 0:
+                    bit_len_str, field = [s for s in [x.strip() for x in clean_line[4:].split(" ")] if s] #split type/name, filter out empties
+                else:
+                    bit_len_str, field = orig_line[3:].split(" ");
+                bit_len = int(bit_len_str)
+                if bit_len != 8 or bit_len != 16 or bit_len != 32 or bit_len != 64:
+                    if bit_len < 8:
+                        orig_line = "uint8 " + field
+                        bit_len_const = "uint8 %s_%s_BITLEN = %s" % (short_name.upper(),field.upper(), bit_len)
+                    elif bit_len < 16:
+                        orig_line = "uint16 " + field
+                        bit_len_const = "uint8 %s_%s_BITLEN = %s" % (short_name.upper(),field.upper(), bit_len)
+                    elif bit_len < 32:
+                        orig_line = "uint32 " + field
+                        bit_len_const = "uint8 %s_%s_BITLEN = %s" % (short_name.upper(),field.upper(), bit_len)
+                    elif bit_len < 64:
+                        orig_line = "uint64 " + field
+                        bit_len_const = "uint8 %s_%s_BITLEN = %s" % (short_name.upper(),field.upper(), bit_len)
+                    constants.append(_load_constant_line(bit_len_const))
             field_type, name = _load_field_line(orig_line, package_name)
             types.append(field_type)
             names.append(name)
